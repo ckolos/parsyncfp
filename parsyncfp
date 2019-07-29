@@ -373,6 +373,7 @@ if (!defined $FROMLIST) {
     close CFL; close NFL;  # just close them, don't delete, cp, or mv them.
     #unlink "$FROMLIST" or die "FATAL: Couldn't rm [$FROMLIST]";
     #move("$tf","$FROMLIST");  
+    $FROMLIST = $tf;
     
 } 
 
@@ -419,7 +420,7 @@ if (defined $FROMLIST) {
     # and capture the child PID!
     my $AFLAG = "";
     if ($TRUSTME) {$AFLAG = "-a "; } # if user specs the format that includes sizes
-    $fpartcmd="cd $TRIMPATH; fpart -v -L -s $FPARTSIZE_N $AFLAG -i $tf -o $FP_ROOT 2> $FPART_LOGFILE & echo \"\${!}\" > $FP_PIDFILE";
+    $fpartcmd="cd $TRIMPATH; fpart -v -L -s $FPARTSIZE_N $AFLAG -i $FROMLIST -o $FP_ROOT 2> $FPART_LOGFILE & echo \"\${!}\" > $FP_PIDFILE";
 } else { # use the full recursive fpart
     # capture the child PID!
     $fpartcmd = "fpart -v -L -z -s $FPARTSIZE_N -o $FP_ROOT $fnd2r  2> $FPART_LOGFILE & echo \"\${!}\" > $FP_PIDFILE"; 
