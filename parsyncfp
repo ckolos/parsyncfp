@@ -231,7 +231,14 @@ if (! defined $NP){$NP = int(sqrt($NCPUs)+ 0.5);} # round sqrt(NCPUs) (hyperthre
 if (! defined $MAXBW) {$MAXBW = 1000000;} # essentially unlimited
 else {$MAXBW = int($MAXBW / $NP + 0.5);} # users expect total maxbw; so have to divide by NP.
 if (! defined $MAXLOAD) {$MAXLOAD = $NP + 2 ;} #  + 1 for IO load
-if (! defined $ROOTDIR) {$ROOTDIR = `pwd`; chomp $ROOTDIR;}  # where all dirs must be rooted.
+
+if (! defined $ROOTDIR) {
+  WARN("A $$ROOTDIR has not been set via the startdir flag on the command-line. As a result, all rsync transfers
+        will be run from `pwd`, which might not be what you want.");
+  $ROOTDIR = `pwd`;
+  chomp $ROOTDIR;
+}  # where all dirs must be rooted.
+
 if (! defined $FPARTSIZE) {$FPARTSIZE = "10G"; $FPARTSIZE_N = 104857600;} # default is 10Gish
 elsif ($FPARTSIZE < 0) {$FPARTSIZE = $FPARTSIZE * -1; $SKIP_FPART_CHECK = 1;} # Tells check to ignore huge #s of chunkfiles
 if ($FPARTSIZE =~ /[PpTtGgMmKk]/) {$FPARTSIZE_N = ptgmk($FPARTSIZE); }
@@ -341,11 +348,11 @@ if (!defined $FROMLIST) {
             }
             # now process the input file to trim the TRIMPATH
             if (-e $tf) {unlink $tf or FATAL("Temp file [$tf] exists and can't be deleted.\n");}
-            open (CFL, "<$FROMLIST") or FATAL("Can't open FROMLIST [$FROMLIST]'");
-            open (NFL, ">$tf") or FATAL("Can't open TEMPFILE [$tf]'");
+            open (CURRENT_FROMLIST, "<$FROMLIST") or FATAL("Can't open FROMLIST [$FROMLIST]'");
+            open (NEW_FROMLIST, ">$tf") or FATAL("Can't open TEMPFILE [$tf]'");
             my $lc=0;
-            while (<CFL>) {
-                #print "\nCFL input: [$_]\n";
+            while (<CURRENT_FROMLIST>) {
+                #print "\nCURRENT_FROMLIST input: [$_]\n";
                 $lc++;
                 if ($_ =~ /$TRIMPATH/) { # this will now hit the top-level dir line alone since it will now be '/home/hjm'
                     # print "yup ";
@@ -359,18 +366,19 @@ if (!defined $FROMLIST) {
                       #print "\nTRUSTME OUTPUT: [$TT]";
                     } else { $TT =  substr($_, 1);} # and now the leftover leading '/' is gone as well
                     #print "\nTT: [$TT]";
-                    print NFL $TT;
+                    print NEW_FROMLIST $TT;
                     #sleep 1;
                 } else { # if $TRIMPATH = '/home/hjm/' subst /home/hjm/nacs/hpc -> nacs/hpc
                     chomp;
                     print STDERR "Warning: [$_] in FROMLIST [$FROMLIST] line [$lc] doesn't have a [$TRIMPATH]\n";
                 }
             }
-            # print "NFL done printing\n";
+            # print "NEW_FROMLIST done printing\n";
         }
     }
     #don't want to change the FROMLIST since it may have taken a long time to generate, so use the $tf as input to fpart
-    close CFL; close NFL;  # just close them, don't delete, cp, or mv them.
+    close CURRENT_FROMLIST;
+    close NEW_FROMLIST;  # just close them, don't delete, cp, or mv them.
     #unlink "$FROMLIST" or die "FATAL: Couldn't rm [$FROMLIST]";
     #move("$tf","$FROMLIST");  
     $FROMLIST = $tf;
