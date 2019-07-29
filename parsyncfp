@@ -239,7 +239,7 @@ else {$FPARTSIZE_N = $FPARTSIZE;}
 if ($DEBUG) {debug(__LINE__, "FPARTSIZE set to: [$FPARTSIZE]\nFPARTSIZE_N set to [$FPARTSIZE_N]");}
 
 # fix .ssh/config file to eliminate wonky errors.
-fix_ssh_config();
+# fix_ssh_config();
 $IF_SPEED = 0;
 # ?? Is this nec anymore?  If so, need to bring it up to date with the new naming conventions
 # see: https://goo.gl/kDLr8b
